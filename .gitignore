@@ -87,3 +87,19 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Pycharm project settings
+.idea/
+
+# Models
+*.npz
+
+# Some directories
+data/
+model/
+log/
+
+# Stub files
+!data/stub.txt
+!model/stub.txt
+!log/stub.txt
