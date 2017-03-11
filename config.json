@@ -1,3 +1,11 @@
 {
+    /// Basic config.
 
+    // Float type.
+    "floatX": "float32",
+
+    /// Hyper-parameters.
+
+    "n_words": 10000,
+    "maxlen": 1000
 }
