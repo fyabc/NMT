@@ -6,5 +6,5 @@ from __future__ import print_function, unicode_literals
 __author__ = 'fyabc'
 
 
-class Model(object):
+class TextIterator(object):
     pass

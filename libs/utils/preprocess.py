@@ -64,5 +64,11 @@ def check_config(config=Config):
     pass
 
 
-def preprocess_config():
-    pass
+def preprocess_config(args=None):
+    if '-h' in args or '--help' in args:
+        print('See comments of file "config.json" to know how to set arguments.')
+        exit(0)
+
+    parse_args(args)
+
+    # todo: modify some config

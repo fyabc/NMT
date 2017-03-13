@@ -3,6 +3,20 @@
 
     // Float type.
     "floatX": "float32",
+    // Random seed.
+    "seed": 1234,
+
+    /// Job name, includes some options.
+    "job_name": null,
+
+    "logging_file": null,
+    // Append logging file or create a new logging file?
+    "append": false,
+
+    /// Train type
+    // Candidates:
+    //     baseline
+    "type": "baseline",
 
     /// Hyper-parameters.
 

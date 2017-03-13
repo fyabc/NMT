@@ -9,7 +9,12 @@ __author__ = 'fyabc'
 
 
 def main():
-    pass
+    # Can add some args here
+    more_args = [
+
+    ]
+
+    train(more_args)
 
 
 if __name__ == '__main__':
