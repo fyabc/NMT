@@ -22,8 +22,6 @@
     "append": false,
 
     /// Train type
-    // Candidates:
-    //     baseline
     "type": "baseline",
 
     /// Model name
@@ -32,12 +30,15 @@
 
     // Reload model of ? iteration. Default is None.
     // If this is None, will load newest model, and this will be set to the iteration of this model.
-    // If this < 0, will restart the training, and old models will be overwritten.
-    // If this >= 0, will load the model of this iteration.
+    // If this <= 0, will restart the training, and old models will be overwritten.
+    // If this > 0, will load the model of this iteration.
     "start_iteration": null,
 
     /// Hyper-parameters.
 
     "n_words": 10000,
-    "maxlen": 1000
+    "maxlen": 1000,
+
+    // Max iteration, a very large number
+    "max_iteration": 1000000
 }

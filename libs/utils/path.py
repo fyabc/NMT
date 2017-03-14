@@ -10,6 +10,7 @@ from __future__ import print_function, unicode_literals
 import errno
 import gzip
 import os
+import fnmatch
 
 from ._compat import pkl
 
@@ -61,3 +62,26 @@ def find_newest_model(dir_name, raw_name, ext='.npz', ret_filename=False):
     newest_filename = ''
 
     pattern = '{}.*{}'.format(os.path.basename(raw_name), ext)
+
+    for filename in os.listdir(dir_name):
+        if fnmatch.fnmatch(filename, pattern):
+            name, iteration, ext = split_model_name(filename)
+
+            try:
+                iteration = int(iteration)
+            except ValueError:
+                continue
+
+            if iteration > max_number:
+                max_number = iteration
+                newest_filename = filename
+
+    newest_filename = os.path.join(dir_name, newest_filename)
+
+    if ret_filename:
+        return max_number, newest_filename
+    return max_number
+
+
+def model_iteration_name(model_name, iteration, ext='.npz'):
+    return model_name.replace(ext, '.{}{}'.format(iteration, ext))
