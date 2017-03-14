@@ -5,15 +5,16 @@
 from __future__ import print_function, unicode_literals
 
 import os
-import gzip
-from ._compat import pkl
-
 import numpy as np
 
 from .config import Config
 
 __author__ = 'fyabc'
 
+
+########
+# Math #
+########
 
 # The float type of Theano. Default to 'float32'.
 # fX = config.floatX
@@ -22,19 +23,6 @@ fX = Config['floatX']
 
 def floatX(value):
     return np.asarray(value, dtype=fX)
-
-
-def f_open(filename, mode='rb', unpickle=True):
-    if filename.endswith('.gz'):
-        _open = gzip.open
-    else:
-        _open = open
-
-    if unpickle:
-        with _open(filename, 'rb') as f:
-            return pkl.load(f)
-    else:
-        return open(filename, mode)
 
 
 def average(sequence):

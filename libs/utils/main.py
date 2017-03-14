@@ -18,22 +18,10 @@ from .config import Config
 __author__ = 'fyabc'
 
 
-def _parse_job_name():
-    job_name = Config['job_name']
-
-    if job_name is None:
-        return
-
-
 def process_before_train(more_args=None):
     args = sys.argv + (more_args or [])
 
     preprocess_config(args)
-
-    # Set job name.
-    _parse_job_name()
-
-    # todo: other settings, e.g. set logging file
 
     # Set logging file.
     init_logging_file(append=Config['append'])
@@ -62,9 +50,9 @@ def process_after_train():
 
 
 def real_main(call_table, more_args=None):
-    process_before_train(more_args)
-
     try:
+        process_before_train(more_args)
+
         train_func = call_table.get(Config['type'].lower(), None)
 
         if train_func is None:

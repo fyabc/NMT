@@ -1,15 +1,23 @@
 {
     /// Basic config.
 
+    /// Job name, must set it!
+    "name": null,
+
+    // Reload the previous saved config? Default is True.
+    // If False, it will use current config and save it (will overwrite previous config)
+    // If there is not any previous config, this config is useless: just load current config.
+    "reload_config": true,
+
     // Float type.
     "floatX": "float32",
     // Random seed.
     "seed": 1234,
 
-    /// Job name, includes some options.
-    "job_name": null,
+    // Logging filename.
+    // directory is '${PROJECT_ROOT}/log/${job_name}/'
+    "logging_file": "log.txt",
 
-    "logging_file": null,
     // Append logging file or create a new logging file?
     "append": false,
 
@@ -17,6 +25,16 @@
     // Candidates:
     //     baseline
     "type": "baseline",
+
+    /// Model name
+    // directory is '${PROJECT_ROOT}/model/${job_name}'
+    "model_file": "model.npz",
+
+    // Reload model of ? iteration. Default is None.
+    // If this is None, will load newest model, and this will be set to the iteration of this model.
+    // If this < 0, will restart the training, and old models will be overwritten.
+    // If this >= 0, will load the model of this iteration.
+    "start_iteration": null,
 
     /// Hyper-parameters.
 

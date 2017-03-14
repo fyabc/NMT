@@ -3,65 +3,66 @@
 
 from __future__ import print_function, unicode_literals
 
-import sys
-from warnings import warn
+import os
 
-from .config import Config
+from .args import parse_args
+from .path import silent_mkdir, find_newest_model
+from .config import Config, load_config, save_config
+from .constants import *
 
 __author__ = 'fyabc'
 
 
-# The escaped string double quote.
-_StringDoubleQuote = '@'
-_KeyValueSep = '='
-_DotSep = '.'
-Tilde = '~'
-
-
-def _strict_update(key_path, value, config):
-    """Update the config value strictly (raise error if key not exists)
-
-    :param key_path: The path of attribute key, a list of strings.
-    :param value: The attribute value.
-    :param config: The config dict to be updated.
-    :return: Nothing
-    """
-
-    d = config
-
-    len_key_path = len(key_path)
-    try:
-        for i, k in enumerate(key_path):
-            if i == len_key_path - 1:
-                if k not in d:
-                    raise KeyError()
-                else:
-                    d[k] = eval(value)
-            else:
-                d = d[k]
-    except (KeyError, TypeError):
-        raise KeyError('The key "{}" is not in the parameters.'.format(_DotSep.join(key_path)))
-
-
-def parse_args(args=None, config=Config):
-    args = args or sys.argv
-
-    for i, arg in enumerate(args):
-        arg = arg.replace(_StringDoubleQuote, '"')
-
-        if _KeyValueSep in arg:
-            key, value = arg.rsplit(_KeyValueSep, 1)
-            key_path = key.split(_DotSep)
-            _strict_update(key_path, value, config)
-        else:
-            if i > 0:
-                warn('Warning: The argument "{}" is unused'.format(arg))
-
-    return config
-
-
 def check_config(config=Config):
     pass
+
+
+def _load_save_config(this_model_path):
+    """Load previous saved config."""
+    if Config[ReloadConfig]:
+        previous_config_filename = os.path.join(this_model_path, ConfigFileName)
+        if os.path.exists(previous_config_filename):
+            Config.clear()
+            Config.update(load_config(previous_config_filename))
+
+    # Save config file
+    save_config(Config, os.path.join(this_model_path, ConfigFileName))
+
+
+def _parse_job_name():
+    job_name = Config[JobName]
+
+    if job_name is None:
+        raise ValueError('Must set job name')
+
+    # Create directories if not exist.
+    this_model_path = os.path.join(ModelPath, job_name)
+    this_log_path = os.path.join(LogPath, job_name)
+
+    silent_mkdir(
+        this_model_path,
+        this_log_path,
+    )
+
+    return this_model_path, this_log_path
+
+
+def _replace_path(this_model_path, this_log_path):
+    Config[LoggingFile] = os.path.join(this_log_path, Config[LoggingFile])
+
+    # todo: reload (train from newest model) or restart
+    start_iteration = Config[StartIteration]
+
+    if start_iteration is None:
+        # Load newest model
+        pass
+    elif start_iteration < 0:
+        # Restart model
+        pass
+    else:
+        pass
+
+    Config[ModelFile] = os.path.join(this_model_path, Config[ModelFile])
 
 
 def preprocess_config(args=None):
@@ -72,3 +73,12 @@ def preprocess_config(args=None):
     parse_args(args)
 
     # todo: modify some config
+
+    # Set job name.
+    this_model_path, this_log_path = _parse_job_name()
+
+    # Reload config if needed, then save current config
+    _load_save_config(this_model_path)
+
+    # Replace path.
+    _replace_path(this_model_path, this_log_path)

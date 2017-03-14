@@ -14,7 +14,7 @@ def test_config():
 
 
 def test_preprocess():
-    from libs.utils.preprocess import parse_args
+    from libs.utils.args import parse_args
 
     parse_args(None, Config)
 
