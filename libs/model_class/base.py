@@ -12,11 +12,14 @@ from ..utils.path import model_iteration_name
 from ..utils.config import C
 from ..utils.constants import *
 from ..utils.my_logging import logging
+from ..utils.name_register import NameRegister
 
 __author__ = 'fyabc'
 
 
-class Model(object):
+class Model(NameRegister):
+    NameTable = {}
+
     def __init__(self, load=None):
         """
         :param load: None or a dict that contains the parameters of ``self.load``.

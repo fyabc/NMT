@@ -23,3 +23,5 @@ class BaselineModel(Model):
 
     def build_model(self):
         pass
+
+BaselineModel.register_class(['baseline'])
