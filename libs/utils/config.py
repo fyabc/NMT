@@ -28,3 +28,4 @@ def save_config(config, filename):
         json.dump(config, f, indent=4)
 
 Config = load_config(ConfigFilePath)
+C = Config

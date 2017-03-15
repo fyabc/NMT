@@ -3,8 +3,13 @@
 
 from __future__ import print_function, unicode_literals
 
-from .utils.config import Config as C
+from .data_tool.text_iterator import TextIterator
+from .model_class.baseline import BaselineModel
+
+from .utils.config import C
 from .utils.constants import *
+from .utils.path import model_iteration_name
+from .utils.my_logging import message
 
 __author__ = 'fyabc'
 
@@ -12,10 +17,25 @@ __author__ = 'fyabc'
 def train_baseline():
     print('Training baseline')
 
-    for iteration in range(C[StartIteration] + 1, C['max_iteration']):
-        pass
+    start_iteration = C[K_StartIteration]
 
-    print(C[StartIteration], C['max_iteration'])
+    print(start_iteration, C['max_iteration'])
+    print(model_iteration_name(C[K_Model], start_iteration))
 
-    if C[StartIteration] <= 0:
-        print('Do not have model to load')
+    text_iterator = TextIterator(
+        C['data_src'],
+        C['data_tgt'],
+        C['vocab_src'],
+        C['vocab_tgt'],
+        C['batch_size'],
+        C['maxlen'],
+        C['n_words_src'],
+        C['n_words_tgt'],
+    )
+
+    if start_iteration <= 0:
+        load = None
+    else:
+        load = {'filename': C[K_Model], 'iteration': start_iteration}
+
+    model = BaselineModel(load=load)

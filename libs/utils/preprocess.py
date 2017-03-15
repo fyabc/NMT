@@ -19,7 +19,7 @@ def _check_config():
 
 def _load_save_config(this_model_path, save=True):
     """Load previous saved config."""
-    if Config[ReloadConfig]:
+    if Config[K_ReloadConfig]:
         previous_config_filename = os.path.join(this_model_path, ConfigFileName)
         if os.path.exists(previous_config_filename):
             # Do not clear new config, just overwrite it.
@@ -31,7 +31,7 @@ def _load_save_config(this_model_path, save=True):
 
 
 def _parse_job_name():
-    job_name = Config[JobName]
+    job_name = Config[K_Name]
 
     if job_name is None:
         raise ValueError('Must set job name')
@@ -49,20 +49,23 @@ def _parse_job_name():
 
 
 def _replace_path(this_model_path, this_log_path):
-    Config[LoggingFile] = os.path.join(this_log_path, Config[LoggingFile])
+    Config[K_Logging] = os.path.join(this_log_path, Config[K_Logging])
 
-    if Config[StartIteration] is None:
+    if Config[K_StartIteration] is None:
         # Load newest model
-        name, _, ext = split_model_name(Config[ModelFile])
+        name, _, ext = split_model_name(Config[K_Model])
 
         # If there is not any models, this will be -1
-        Config[StartIteration] = find_newest_model(this_model_path, name, ext, ret_filename=False)
+        Config[K_StartIteration] = find_newest_model(this_model_path, name, ext, ret_filename=False)
 
-    if Config[StartIteration] <= 0:
+    if Config[K_StartIteration] <= 0:
         # Restart model
-        Config[StartIteration] = 0
+        Config[K_StartIteration] = 0
 
-    Config[ModelFile] = os.path.join(this_model_path, Config[ModelFile])
+    Config[K_Model] = os.path.join(this_model_path, Config[K_Model])
+
+    for key in K_DataPath:
+        Config[key] = Config[key].replace(Tilde, DataPath)
 
 
 def preprocess_config(args=None, **kwargs):

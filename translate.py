@@ -12,9 +12,9 @@ __author__ = 'fyabc'
 
 def translate():
     print('Translating model')
-    print('Model name:', model_iteration_name(C[ModelFile], C[StartIteration]))
+    print('Model name:', model_iteration_name(C[K_Model], C[K_StartIteration]))
 
-    if C[StartIteration] <= 0:
+    if C[K_StartIteration] <= 0:
         print('Do not have model to load')
 
 

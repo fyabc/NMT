@@ -83,5 +83,6 @@ def find_newest_model(dir_name, raw_name, ext='.npz', ret_filename=False):
     return max_number
 
 
-def model_iteration_name(model_name, iteration, ext='.npz'):
-    return model_name.replace(ext, '.{}{}'.format(iteration, ext))
+def model_iteration_name(model_name, iteration):
+    root, ext = os.path.splitext(model_name)
+    return '{}.{}{}'.format(root, iteration, ext)

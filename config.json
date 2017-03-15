@@ -34,9 +34,27 @@
     // If this > 0, will load the model of this iteration.
     "start_iteration": null,
 
+    /// Data paths.
+    // '~' means '${PROJECT_ROOT}/data'
+
+    // Training data filenames
+    "data_src": "~/train/edit_dis_top1M.en",
+    "data_tgt": "~/train/edit_dis_top1M.fr",
+
+    // Vocabulary filenames
+    "vocab_src": "~/dic/en2fr_en_vocabs_top1M.pkl",
+    "vocab_tgt": "~/dic/en2fr_fr_vocabs_top1M.pkl",
+
     /// Hyper-parameters.
 
-    "n_words": 10000,
+    // Vocabulary size
+    "n_words_src": 30000,
+    "n_words_tgt": 30000,
+
+    // Discount learning rate after ? iterations
+    "lr_discount_freq": 80000,
+
+    "batch_size": 128,
     "maxlen": 1000,
 
     // Max iteration, a very large number
