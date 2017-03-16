@@ -15,11 +15,6 @@ from .basic import fX
 __author__ = 'fyabc'
 
 
-def p_(prefix, name):
-    """Get the name of tensor with the prefix (layer name) and variable name."""
-    return '{}_{}'.format(prefix, name)
-
-
 def average(sequence):
     if sequence is None:
         return 0.0

@@ -21,7 +21,10 @@
     // Append logging file or create a new logging file?
     "append": false,
 
-    /// Train type
+    /// Train type, useless now
+    // Candidates:
+    //     baseline
+    //     (More in future)
     "type": "baseline",
 
     /// Model name
@@ -33,6 +36,9 @@
     // If this <= 0, will restart the training, and old models will be overwritten.
     // If this > 0, will load the model of this iteration.
     "start_iteration": null,
+
+    // Open Theano profile mode?
+    "profile": false,
 
     /// Data paths.
     // '~' means '${PROJECT_ROOT}/data'
@@ -58,5 +64,18 @@
     "maxlen": 1000,
 
     // Max iteration, a very large number
-    "max_iteration": 1000000
+    "max_iteration": 1000000,
+
+    /// Model structure config
+
+    // Model type
+    "model": "GruWithFastFw",
+
+    // Number of layers in encoder/decoder
+    "n_encoder_layer": 4,
+    "n_decoder_layer": 4,
+
+    "use_zigzag": true,
+    "use_half": true,
+    "use_theta": true
 }
