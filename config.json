@@ -60,22 +60,37 @@
     // Discount learning rate after ? iterations
     "lr_discount_freq": 80000,
 
-    "batch_size": 128,
-    "maxlen": 1000,
+    "batch_size": 64,
+    "valid_batch_size": 80,
+    "maxlen": 1000,         // Maximum length of the description
 
-    // Max iteration, a very large number
+    // Max iteration, a very large number, finish after this many updates
     "max_iteration": 1000000,
 
     /// Model structure config
 
-    // Model type
-    "model": "GruWithFastFw",
+    // Model type (unused now)
+    "model": "Gru-FastFw",
+
+    "to_upper_layer": "FastFw",
 
     // Number of layers in encoder/decoder
     "n_encoder_layer": 4,
     "n_decoder_layer": 4,
 
+    "dim_word": 100,        // Word vector dimensionality
+    "dim": 1000,            // The number of LSTM units
+    "alignment_dim": 512,
+
+    // Model options
     "use_zigzag": true,
     "use_half": true,
-    "use_theta": true
+    "use_theta": true,
+    "upload_emb": false,
+    "use_final_residual": false,
+
+    // Some initialize options?
+    "init_distribution": "norm",
+    "init_affine_weight": 0.01
+
 }

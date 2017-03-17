@@ -10,7 +10,7 @@ from __future__ import print_function, unicode_literals
 import numpy as np
 import theano.tensor as T
 
-from .basic import fX
+from ..utils.basic import fX
 
 __author__ = 'fyabc'
 
@@ -38,7 +38,8 @@ def get_rank(a):
     return ranks
 
 
-# Parameter initializer
+# Parameter initializers
+
 def orthogonal_weight(ndim):
     W = np.random.randn(ndim, ndim)
     u, _, _ = np.linalg.svd(W)
@@ -54,6 +55,33 @@ def normal_weight(n_in, n_out=None, scale=0.01, orthogonal=True):
     else:
         W = scale * np.random.randn(n_in, n_out)
     return W.astype(fX)
+
+
+def uniform_weight(n_in, n_out=None, scale=0.01):
+    if n_out is None:
+        n_out = n_in
+    return np.random.uniform(-1. * scale, 1. * scale, (n_in, n_out)).astype(fX)
+
+
+def orthogonal_weight_1xb(n_in, b):
+    init_Ws = [[] for _ in xrange(b)]
+    for i in xrange(b):
+        init_Ws[i] = orthogonal_weight(n_in)
+
+    return np.concatenate(init_Ws, axis=1)
+
+
+def orthogonal_weight_axb(nin, a, b):
+    initWs = np.zeros((nin * a, nin * b), dtype='float32')
+    for i in xrange(a):
+        for j in xrange(b):
+            initWs[i * nin: (i + 1) * nin, j * nin: (j + 1) * nin] = orthogonal_weight(nin)
+
+    return initWs
+
+
+def normal_vector(n_in, scale=0.01):
+    return scale * np.random.randn(n_in, dtype=fX)
 
 
 def concatenate(tensors, axis=0):
@@ -106,3 +134,16 @@ tanh = T.tanh
 linear = lambda x: x
 relu = T.nnet.relu
 sigmoid = T.nnet.sigmoid
+
+
+__all__ = [
+    'average',
+    'get_rank',
+    'orthogonal_weight',
+    'orthogonal_weight_1xb',
+    'orthogonal_weight_axb',
+    'normal_weight',
+    'uniform_weight',
+    'normal_vector',
+    'concatenate',
+]
