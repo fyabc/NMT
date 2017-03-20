@@ -15,7 +15,7 @@ return: a Theano tensor that represent the output.
 
 No parameters
 
-return: params: the dict of (numpy) parameters.
+return: params: the dict of (np) parameters.
 """
 
 from __future__ import print_function, unicode_literals
@@ -252,7 +252,7 @@ def LstmFastFwDecoder(input_, params, mask, context, context_mask, previous_h,
     n_samples = input_.shape[1] if input_.ndim == 3 else 1
 
     if mask is None:
-        mask = T.alloc(1., input_.shape[0],)
+        mask = T.alloc(1., input_.shape[0], )
 
     hidden_dim = params[p_(prefix, 'Wf', 0)].shape[-1] // 4
     non_sequence_vars = [
@@ -475,8 +475,8 @@ def GruEncoder(input_, params, prefix='encoder', mask=None, dropout_param=None):
             mask = mask[::-1]
             global_f = global_f[::-1]
 
-        # if dropout_param:
-        #     _hidden_state_last_layer = dropout(_hidden_state_last_layer, *dropout_param)
+            # if dropout_param:
+            #     _hidden_state_last_layer = dropout(_hidden_state_last_layer, *dropout_param)
 
     if n_layer % 2 == 0 and use_zigzag:
         global_f = global_f[::-1]
@@ -540,7 +540,7 @@ def GruDecoder(input_, params, mask, context, context_mask, previous_h,
     n_samples = input_.shape[1] if input_.ndim == 3 else 1
 
     if mask is None:
-        mask = T.alloc(1., input_.shape[0],)
+        mask = T.alloc(1., input_.shape[0], )
 
     hidden_dim = params[p_(prefix, 'Uz', 0)].shape[1]
     non_sequence_vars = [
@@ -687,7 +687,7 @@ def GruDecoder(input_, params, mask, context, context_mask, previous_h,
 def _param_init_lstm_part(params, m_layer, lstm_dim, prefix):
     for layer_id in xrange(m_layer):
         params[p_(prefix, 'Wr', layer_id)] = orthogonal_weight_1xb(lstm_dim, 4)
-        params[p_(prefix, 'br', layer_id)] = np.zeros((4 * lstm_dim,)).astype('float32')
+        params[p_(prefix, 'br', layer_id)] = np.zeros((4 * lstm_dim,), dtype=fX)
         if C['use_theta']:
             params[p_(prefix, 'theta_rho', layer_id)] = np.zeros((lstm_dim,), dtype='float32')  # norm_vector(lstm_dim)
             params[p_(prefix, 'theta_phi', layer_id)] = np.zeros((lstm_dim,), dtype='float32')
@@ -696,7 +696,8 @@ def _param_init_lstm_part(params, m_layer, lstm_dim, prefix):
 
 def init_LstmWithFastFw():
     init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, lstm_dim, alignment_dim, voc_size = \
-        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C['alignment_dim'], C['n_words']
+        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+            'alignment_dim'], C['n_words']
 
     assert lstm_dim % 2 == 0
     assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
@@ -749,19 +750,19 @@ def init_LstmWithFastFw():
     # For attention model
     params[p_('decoder', 'We_att')] = normal_weight(10 * lstm_dim, alignment_dim, scale=0.01)
     params[p_('decoder', 'Wh_att')] = normal_weight(lstm_dim, alignment_dim, scale=0.01)
-    params[p_('decoder', 'Wb_att')] = np.zeros((alignment_dim,)).astype('float32')
+    params[p_('decoder', 'Wb_att')] = np.zeros((alignment_dim,), dtype=fX)
     params[p_('decoder', 'U_att')] = normal_weight(alignment_dim, 1, scale=0.01)
-    params[p_('decoder', 'Ub_att')] = np.zeros((1,)).astype('float32')
+    params[p_('decoder', 'Ub_att')] = np.zeros((1,), dtype=fX)
 
     # Map the output from decoder to the softmax layer
     params[p_('fc_compress_lastHiddenState', 'W')] = normal_weight(lstm_dim, embedding_dim, scale=init_affine_weight)
-    params[p_('fc_compress_lastHiddenState', 'b')] = np.zeros((embedding_dim,)).astype('float32')
+    params[p_('fc_compress_lastHiddenState', 'b')] = np.zeros((embedding_dim,), dtype=fX)
     params[p_('fc_compress_emb', 'W')] = normal_weight(embedding_dim, embedding_dim, scale=init_affine_weight)
-    params[p_('fc_compress_emb', 'b')] = np.zeros((embedding_dim,)).astype('float32')
+    params[p_('fc_compress_emb', 'b')] = np.zeros((embedding_dim,), dtype=fX)
     params[p_('fc_compress_ctx', 'W')] = normal_weight(10 * lstm_dim / 4, embedding_dim, scale=init_affine_weight)
-    params[p_('fc_compress_ctx', 'b')] = np.zeros((embedding_dim,)).astype('float32')
+    params[p_('fc_compress_ctx', 'b')] = np.zeros((embedding_dim,), dtype=fX)
     params[p_('fc_to_softmax', 'W')] = normal_weight(embedding_dim, voc_size, scale=init_affine_weight)
-    params[p_('fc_to_softmax', 'b')] = np.zeros((voc_size,)).astype('float32')
+    params[p_('fc_to_softmax', 'b')] = np.zeros((voc_size,), dtype=fX)
 
     return params
 
@@ -778,7 +779,8 @@ def _param_init_gru_part(params, m_layer, gru_dim, prefix):
 
 def init_GruWithHighway():
     init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
-        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C['alignment_dim'], C['n_words']
+        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+            'alignment_dim'], C['n_words']
 
     assert gru_dim % 2 == 0
     assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
@@ -796,6 +798,10 @@ def init_GruWithHighway():
 
     params = OrderedDict()
 
+    # Embedding
+    params['Wemb'] = weight_sampler(voc_size, embedding_dim, scale=init_affine_weight)
+    params['Wemb_dec'] = weight_sampler(voc_size, embedding_dim, scale=init_affine_weight)
+
     # Encoder (forward and reverse)
     _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder')
     _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder_r')
@@ -808,6 +814,155 @@ def init_GruWithHighway():
             embedding_dim * use_src4all_layers + gru_dim, 3 * gru_dim, scale=init_affine_weight)
 
     # Decoder
-    # todo
+    _param_init_gru_part(params, n_decoder_layer, gru_dim, 'decoder')
+    params[p_('decoder', 'Wf', 0)] = weight_sampler(2 * gru_dim + embedding_dim, 3 * gru_dim, scale=init_affine_weight)
+    for layer_id in xrange(1, n_decoder_layer):
+        params[p_('decoder', 'Wf', layer_id)] = weight_sampler(
+            3 * gru_dim + embedding_dim * use_src4all_layers, 3 * gru_dim, scale=init_affine_weight)
+
+    # For the initial state of decoder
+    params[p_('initDecoder', 'W')] = weight_sampler(2 * gru_dim, gru_dim, scale=init_affine_weight)
+    params[p_('initDecoder', 'b')] = np.zeros((gru_dim,), dtype='float32')
+
+    # For attention model
+    params[p_('decoder', 'We_att')] = normal_weight(2 * gru_dim, alignment_dim, scale=0.01)
+    params[p_('decoder', 'Wh_att')] = normal_weight(gru_dim, alignment_dim, scale=0.01)
+    params[p_('decoder', 'Wb_att')] = np.zeros((alignment_dim,), dtype=fX)
+    params[p_('decoder', 'U_att')] = normal_weight(alignment_dim, 1, scale=0.01)
+    params[p_('decoder', 'Ub_att')] = np.zeros((1,), dtype=fX)
+
+    # Map the output from decoder to the softmax layer
+    params[p_('fc_compress_lastHiddenState', 'W')] = weight_sampler(gru_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_lastHiddenState', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_compress_emb', 'W')] = weight_sampler(embedding_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_emb', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_compress_ctx', 'W')] = weight_sampler(2 * gru_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_ctx', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_to_softmax', 'W')] = weight_sampler(embedding_dim, voc_size, scale=init_affine_weight)
+    params[p_('fc_to_softmax', 'b')] = np.zeros((voc_size,), dtype=fX)
+
+    return params
+
+
+def init_GruWithFastFw():
+    init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
+        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+            'alignment_dim'], C['n_words']
+
+    assert gru_dim % 2 == 0
+    assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
+    assert n_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
+
+    params = OrderedDict()
+
+    # Embedding
+    params['Wemb'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
+    params['Wemb_dec'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
+
+    # Encoder (forward and reverse)
+    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder')
+    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder_r')
+    params[p_('encoder', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
+    params[p_('encoder_r', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
+    for layer_id in xrange(1, n_encoder_layer):
+        params[p_('encoder', 'Wf', layer_id)] = normal_weight(
+            3 * gru_dim // (1 + C['use_half']) + gru_dim, 3 * gru_dim, scale=init_affine_weight)
+        params[p_('encoder_r', 'Wf', layer_id)] = normal_weight(
+            3 * gru_dim // (1 + C['use_half']) + gru_dim, 3 * gru_dim, scale=init_affine_weight)
+
+    # Compress the output of the encoder to 1/4
+    params[p_('decoder', 'Wp_compress_e')] = normal_weight(8 * gru_dim, 2 * gru_dim, scale=init_affine_weight)
+    params[p_('decoder', 'bp_compress_e')] = np.zeros((2 * gru_dim,), dtype='float32')
+
+    # Decoder
+    _param_init_gru_part(params, n_decoder_layer, gru_dim, 'decoder')
+    params[p_('decoder', 'Wf', 0)] = normal_weight(2 * gru_dim + embedding_dim, 3 * gru_dim, scale=init_affine_weight)
+    for layer_id in xrange(1, n_decoder_layer):
+        params[p_('decoder', 'Wf', layer_id)] = normal_weight(
+            3 * gru_dim // (1 + C['use_half']) + gru_dim, 3 * gru_dim, scale=0.01)
+
+    # For the initial state of decoder
+    params[p_('initDecoder', 'W')] = normal_weight(8 * gru_dim, gru_dim, scale=init_affine_weight)
+    params[p_('initDecoder', 'b')] = np.zeros((gru_dim,), dtype='float32')
+
+    # For attention model
+    params[p_('decoder', 'We_att')] = normal_weight(8 * gru_dim, alignment_dim, scale=0.01)
+    params[p_('decoder', 'Wh_att')] = normal_weight(gru_dim, alignment_dim, scale=0.01)
+    params[p_('decoder', 'Wb_att')] = np.zeros((alignment_dim,), dtype=fX)
+    params[p_('decoder', 'U_att')] = normal_weight(alignment_dim, 1, scale=0.01)
+    params[p_('decoder', 'Ub_att')] = np.zeros((1,), dtype=fX)
+
+    # Map the output from decoder to the softmax layer
+    params[p_('fc_compress_lastHiddenState', 'W')] = normal_weight(gru_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_lastHiddenState', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_compress_emb', 'W')] = normal_weight(embedding_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_emb', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_compress_ctx', 'W')] = normal_weight(2 * gru_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_ctx', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_to_softmax', 'W')] = normal_weight(embedding_dim, voc_size, scale=init_affine_weight)
+    params[p_('fc_to_softmax', 'b')] = np.zeros((voc_size,), dtype=fX)
+
+    return params
+
+
+def init_GruWithImap():
+    init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
+        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+            'alignment_dim'], C['n_words']
+
+    assert gru_dim % 2 == 0
+    assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
+    assert n_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
+
+    params = OrderedDict()
+
+    # Embedding
+    params['Wemb'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
+    params['Wemb_dec'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
+
+    # Encoder (forward and reverse)
+    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder')
+    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder_r')
+    params[p_('encoder', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
+    params[p_('encoder_r', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
+
+    if C.get('upload_emb', False):
+        params[p_('encoder', 'emb2first_W')] = normal_weight(embedding_dim, gru_dim, scale=init_affine_weight)
+        params[p_('encoder_r', 'emb2first_W')] = normal_weight(embedding_dim, gru_dim, scale=init_affine_weight)
+        params[p_('encoder', 'emb2first_b')] = np.zeros((gru_dim,), dtype=fX)
+        params[p_('encoder_r', 'emb2first_b')] = np.zeros((gru_dim,), dtype=fX)
+        params[p_('decoder', 'emb2first_W')] = normal_weight(embedding_dim, gru_dim, scale=init_affine_weight)
+        params[p_('decoder', 'emb2first_b')] = np.zeros((gru_dim,), dtype=fX)
+
+    for layer_id in xrange(1, n_encoder_layer):
+        params[p_('encoder', 'Wf', layer_id)] = normal_weight(gru_dim, 3 * gru_dim, scale=init_affine_weight)
+        params[p_('encoder_r', 'Wf', layer_id)] = normal_weight(gru_dim, 3 * gru_dim, scale=init_affine_weight)
+
+    # Decoder
+    _param_init_gru_part(params, n_decoder_layer, gru_dim, 'decoder')
+    params[p_('decoder', 'Wf', 0)] = normal_weight(2 * gru_dim + embedding_dim, 3 * gru_dim, scale=init_affine_weight)
+    for layer_id in xrange(1, n_decoder_layer):
+        params[p_('decoder', 'Wf', layer_id)] = normal_weight(gru_dim, 3 * gru_dim, scale=0.01)
+
+    # For the initial state of decoder
+    params[p_('initDecoder', 'W')] = normal_weight(2 * gru_dim, gru_dim, scale=init_affine_weight)
+    params[p_('initDecoder', 'b')] = np.zeros((gru_dim,), dtype='float32')
+
+    # For attention model
+    params[p_('decoder', 'We_att')] = normal_weight(2 * gru_dim, alignment_dim, scale=0.01)
+    params[p_('decoder', 'Wh_att')] = normal_weight(gru_dim, alignment_dim, scale=0.01)
+    params[p_('decoder', 'Wb_att')] = np.zeros((alignment_dim,), dtype=fX)
+    params[p_('decoder', 'U_att')] = normal_weight(alignment_dim, 1, scale=0.01)
+    params[p_('decoder', 'Ub_att')] = np.zeros((1,), dtype=fX)
+
+    # Map the output from decoder to the softmax layer
+    params[p_('fc_compress_lastHiddenState', 'W')] = normal_weight(gru_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_lastHiddenState', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_compress_emb', 'W')] = normal_weight(embedding_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_emb', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_compress_ctx', 'W')] = normal_weight(2 * gru_dim, embedding_dim, scale=init_affine_weight)
+    params[p_('fc_compress_ctx', 'b')] = np.zeros((embedding_dim,), dtype=fX)
+    params[p_('fc_to_softmax', 'W')] = normal_weight(embedding_dim, voc_size, scale=init_affine_weight)
+    params[p_('fc_to_softmax', 'b')] = np.zeros((voc_size,), dtype=fX)
 
     return params

@@ -13,12 +13,19 @@ from ..utils.config import C
 from ..utils.constants import *
 from ..utils.my_logging import logging
 from ..utils.name_register import NameRegister
+from ..multiverso.theano_ext import sharedvar
 
 __author__ = 'fyabc'
 
 
 class Model(NameRegister):
     NameTable = {}
+
+    # FIXME: The duplicated shared variable is to fix the bug in multiverso.
+    # These variables will cause error when trained on more than one nodes without duplicate.
+    # From v-yixia
+    DuplicateSharedVarList = ['decoder_Ub_att']
+    DuplicateSize = 100
 
     def __init__(self, load=None):
         """
@@ -27,6 +34,9 @@ class Model(NameRegister):
 
         # Parameters of theano shared variables
         self.parameters = OrderedDict()
+
+        # Duplicate parameters of theano shared variables.
+        self.dup_parameters = OrderedDict()
 
         # Learning rate.
         self.learning_rate = None
@@ -80,7 +90,19 @@ class Model(NameRegister):
         """
 
         for name, value in np_parameters.iteritems():
-            self.parameters[name] = theano.shared(value, name=name)
+            if name in self.DuplicateSharedVarList:
+                self.parameters[name] = theano.shared(value, name=name)
+                self.dup_parameters[name] = sharedvar.mv_shared(
+                    value=np.ones(self.DuplicateSize) * value[0],
+                    name=name,
+                    borrow=False,
+                )
+            else:
+                self.parameters[name] = sharedvar.mv_shared(
+                    value=np_parameters[name],
+                    name=name,
+                    borrow=False,
+                )
 
     def build_model(self):
         """Build a training model."""

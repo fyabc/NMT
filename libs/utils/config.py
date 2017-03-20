@@ -6,7 +6,7 @@ from __future__ import print_function, unicode_literals
 import json
 import re
 
-from .constants import ConfigFilePath
+from .constants import ConfigFilePath, GeneratedPrefix
 
 __author__ = 'fyabc'
 
@@ -23,9 +23,19 @@ def load_config(filename):
         return json.loads(''.join(_lines))
 
 
-def save_config(config, filename):
+def save_config(config, filename, filter_prefix=GeneratedPrefix):
+    """Save configuration to JSON config file.
+
+    [NOTE]: do NOT save generated options (start with `filter_prefix`)
+    """
+
+    filtered_config = {
+        k: v for k, v in config.iteritems()
+        if not k.startswith(filter_prefix)
+    }
+
     with open(filename, 'w') as f:
-        json.dump(config, f, indent=4)
+        json.dump(filtered_config, f, indent=4)
 
 Config = load_config(ConfigFilePath)
 C = Config

@@ -35,3 +35,11 @@ K_DataPath = [
     'vocab_src',
     'vocab_tgt',
 ]
+
+GeneratedPrefix = '__'
+
+
+def Gen_(key):
+    """Get generated key with generated prefix."""
+
+    return '{}{}'.format(GeneratedPrefix, key)

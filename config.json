@@ -1,5 +1,7 @@
 {
     /// Basic config.
+    // FIXME: The key names start with `GeneratedPrefix` (default is '__')
+    // are reserved for generated options (worker_id, etc.), do not use these keys!
 
     /// Job name, must set it!
     "name": null,
