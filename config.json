@@ -92,7 +92,10 @@
     "use_final_residual": false,
 
     // Some initialize options?
-    "init_distribution": "norm",
+
+    // Initialize distribution
+    // Candidates: "normal", "uniform"
+    "init_distribution": "normal",
     "init_affine_weight": 0.01
 
 }

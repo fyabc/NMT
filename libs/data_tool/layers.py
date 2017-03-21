@@ -789,7 +789,7 @@ def init_GruWithHighway():
     # [NOTE] Hard code for model structure
     use_src4all_layers = C['to_upper_layer'].lower() != 'raw'
 
-    if C['init_distribution'] == 'norm':
+    if C['init_distribution'] == 'normal':
         weight_sampler = normal_weight
     elif C['init_distribution'] == 'uniform':
         weight_sampler = uniform_weight
