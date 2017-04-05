@@ -18,7 +18,7 @@ No parameters
 return: params: the dict of (np) parameters.
 """
 
-from __future__ import print_function, unicode_literals
+from __future__ import print_function
 
 from collections import OrderedDict
 
@@ -27,17 +27,13 @@ import theano
 import theano.tensor as T
 
 from .my_math import concatenate, normal_weight, orthogonal_weight_1xb, uniform_weight, orthogonal_weight
-from ..utils.basic import fX
+from ..utils.basic import fX, p_
 from ..utils.config import C
 
 __author__ = 'fyabc'
 
 
 # Some utilities.
-
-def p_(*args):
-    """Get the name of tensor with the prefix (layer name) and variable name(s)."""
-    return '_'.join(str(arg) for arg in args)
 
 
 def _slice(_x, n, _dim):

@@ -1,9 +1,9 @@
 #! /usr/bin/python
 # -*- encoding: utf-8 -*-
 
-from __future__ import print_function, unicode_literals
+from __future__ import print_function
 
-from libs.train import train_baseline
+from libs.train import train_main
 from libs.utils.main import real_main
 
 __author__ = 'fyabc'
@@ -16,7 +16,7 @@ def main():
     ]
 
     real_main({
-        'baseline': train_baseline,
+        'baseline': train_main,
     }, more_args)
 
 

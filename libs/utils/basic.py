@@ -2,7 +2,7 @@
 
 """Some basic utilities."""
 
-from __future__ import print_function, unicode_literals
+from __future__ import print_function
 
 import os
 
@@ -36,3 +36,27 @@ def save_list(l, filename):
     with open(filename, 'w') as f:
         for i in l:
             f.write(str(i) + '\n')
+
+
+def p_(*args):
+    """Get the name of tensor with the prefix (layer name) and variable name(s)."""
+
+    return '_'.join(str(arg) for arg in args)
+
+
+def slice_(_x, n, _dim):
+    """Utility function to slice a tensor."""
+
+    if _x.ndim == 3:
+        return _x[:, :, n * _dim:(n + 1) * _dim]
+    return _x[:, n * _dim:(n + 1) * _dim]
+
+
+__all__ = [
+    'fX',
+    'floatX',
+    'load_list',
+    'save_list',
+    'p_',
+    'slice_',
+]

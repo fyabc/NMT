@@ -49,6 +49,14 @@
     "data_src": "~/train/edit_dis_top1M.en",
     "data_tgt": "~/train/edit_dis_top1M.fr",
 
+    // Valid data filenames
+    "valid_src": "",
+    "valid_tgt": "",
+
+    // Dictionaries.
+    "dict_src": "",
+    "dict_tgt": "",
+
     // Vocabulary filenames
     "vocab_src": "~/dic/en2fr_en_vocabs_top1M.pkl",
     "vocab_tgt": "~/dic/en2fr_fr_vocabs_top1M.pkl",
@@ -88,14 +96,15 @@
     "use_zigzag": true,
     "use_half": true,
     "use_theta": true,
+    "use_dropout": [false],
     "upload_emb": false,
-    "use_final_residual": false,
 
     // Some initialize options?
 
     // Initialize distribution
     // Candidates: "normal", "uniform"
     "init_distribution": "normal",
-    "init_affine_weight": 0.01
+    "init_affine_weight": 0.01,
 
+    "optimizer": "sgd"
 }

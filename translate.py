@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function, unicode_literals
+from __future__ import print_function
 
 from libs.utils.main import real_main
 from libs.utils.path import model_iteration_name
