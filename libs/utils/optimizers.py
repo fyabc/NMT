@@ -50,7 +50,7 @@ class AdaDelta(Optimizer):
     @classmethod
     def apply(cls, learning_rate, parameters, grads, inputs, cost):
         zipped_grads = [theano.shared(p.get_value() * floatX(0.), name='%s_grad' % k)
-                       for k, p in parameters.iteritems()]
+                        for k, p in parameters.iteritems()]
         running_up2 = [theano.shared(p.get_value() * floatX(0.), name='%s_rup2' % k)
                        for k, p in parameters.iteritems()]
         running_grads2 = [theano.shared(p.get_value() * floatX(0.), name='%s_rgrad2' % k)
@@ -170,3 +170,19 @@ AdaDelta.register_class([])
 RMSProp.register_class([])
 Adam.register_class([])
 SGD.register_class([])
+
+
+def get_stepsgd_lr(baselr, iteration, batch_size=80):
+    m_data = 10560154
+    iterInEpoch = m_data // batch_size
+    halfInEpoch = (iterInEpoch >> 1)
+    if iteration < 1000:
+        if baselr < 0.05:
+            return baselr
+        else:
+            return 0.05 + (baselr - 0.05) / 1000 * iteration
+    elif iteration <= iterInEpoch:
+        return baselr
+    else:
+        idx = (iteration - iterInEpoch) // halfInEpoch + 1
+        return baselr / (2.0 ** idx)

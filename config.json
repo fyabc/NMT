@@ -29,10 +29,6 @@
     //     (More in future)
     "type": "baseline",
 
-    /// Model name
-    // directory is '${PROJECT_ROOT}/model/${job_name}'
-    "model_file": "model.npz",
-
     // Reload model of ? iteration. Default is None.
     // If this is None, will load newest model, and this will be set to the iteration of this model.
     // If this <= 0, will restart the training, and old models will be overwritten.
@@ -42,69 +38,90 @@
     // Open Theano profile mode?
     "profile": false,
 
-    /// Data paths.
-    // '~' means '${PROJECT_ROOT}/data'
-
-    // Training data filenames
-    "data_src": "~/train/edit_dis_top1M.en",
-    "data_tgt": "~/train/edit_dis_top1M.fr",
-
-    // Valid data filenames
-    "valid_src": "",
-    "valid_tgt": "",
-
-    // Dictionaries.
-    "dict_src": "",
-    "dict_tgt": "",
-
-    // Vocabulary filenames
-    "vocab_src": "~/dic/en2fr_en_vocabs_top1M.pkl",
-    "vocab_tgt": "~/dic/en2fr_fr_vocabs_top1M.pkl",
-
-    /// Hyper-parameters.
-
-    // Vocabulary size
-    "n_words_src": 30000,
-    "n_words_tgt": 30000,
-
     // Discount learning rate after ? iterations
     "lr_discount_freq": 80000,
-
-    "batch_size": 64,
-    "valid_batch_size": 80,
-    "maxlen": 1000,         // Maximum length of the description
-
-    // Max iteration, a very large number, finish after this many updates
-    "max_iteration": 1000000,
 
     /// Model structure config
 
     // Model type (unused now)
     "model": "Gru-FastFw",
 
-    "to_upper_layer": "FastFw",
-
-    // Number of layers in encoder/decoder
-    "n_encoder_layer": 4,
-    "n_decoder_layer": 4,
+    /// Model options (keywords in function ``train``)
 
     "dim_word": 100,        // Word vector dimensionality
     "dim": 1000,            // The number of LSTM units
     "alignment_dim": 512,
 
-    // Model options
+    "encoder": "multi_gru",
+    "decoder": "gru_cond",
+
+    "patience": 100,        // Early stopping patience
+    "max_epochs": 5000,
+    "finish_after": 10000000,   // Finish after this many updates
+
+    "dispFreq": 100,
+
+    "decay_c": 0.0,         // L2 regularization penalty
+    "alpha_c": 0.0,         // Alignment regularization
+    "clip_c": -1.0,         // Gradient clipping threshold
+    "lrate": 0.01,          // Learning rate
+
+    // Vocabulary size
+    "n_words_src": 30000,
+    "n_words": 30000,
+
+    "maxlen": 1000,         // Maximum length of the description
+
+    "optimizer": "rmsprop",
+
+    "batch_size": 64,
+    "valid_batch_size": 80,
+
+    /// Model name
+    // directory is '${PROJECT_ROOT}/model/${job_name}'
+    "saveto": "model.npz",
+
+    "validFreq": 10000,
+    "saveFreq": 5000,       // Save the parameters after every saveFreq updates
+    "sampleFreq": 100000,   // Generate some samples after every sampleFreq
+
+    /// Data paths.
+    // '~' means '${PROJECT_ROOT}/data'
+
+    // Training data filenames
+    "data_src": "~/train/filtered_en-fr.en",
+    "data_tgt": "~/train/filtered_en-fr.fr",
+
+    // Valid data filenames
+    "valid_src": "~/valid/dev_en.tok",
+    "valid_tgt": "~/valid/dev_fr.tok",
+
+    // Vocabulary filenames
+    "vocab_src": "~/dic/filtered_en-fr.en.pkl",
+    "vocab_tgt": "~/dic/filtered_en-fr.fr.pkl",
+
+    "use_dropout": [false],
+
+    "reload_": false,
+    "overwrite": false,
+
+    // Number of layers in encoder/decoder
+    "m_encoder_layer": 1,
+    "m_decoder_layer": 1,
+
+    "syncbatch": 1,
+
+    "network_style": "GRUwithFastFw",
+
     "use_zigzag": true,
     "use_half": true,
     "use_theta": true,
-    "use_dropout": [false],
-    "upload_emb": false,
-
-    // Some initialize options?
 
     // Initialize distribution
     // Candidates: "normal", "uniform"
-    "init_distribution": "normal",
+    "init_distr": "normal",
     "init_affine_weight": 0.01,
 
-    "optimizer": "sgd"
+    // Other options
+    "upload_emb": false
 }

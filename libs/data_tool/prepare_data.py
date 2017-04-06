@@ -10,7 +10,7 @@ from ..utils.basic import fX
 __author__ = 'fyabc'
 
 
-def prepare_data(xs, ys, maxlen=None):
+def prepare_data(xs, ys, maxlen=None, n_words_src=30000, n_words=30000):
     """Batch preparation of NMT data.
 
     This swap the axis!

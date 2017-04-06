@@ -91,37 +91,37 @@ class LstmWithFastFwModel(Model):
         np_params = OrderedDict()
 
         init_affine_weight = self.O['init_affine_weight']
-        n_encoder_layer, n_decoder_layer, embedding_dim, lstm_dim, alignment_dim, voc_size = \
-            self.O['n_encoder_layer'], self.O['n_decoder_layer'], self.O['dim_word'], self.O['dim'], \
-            self.O['alignment_dim'], self.O['n_words_tgt']
+        m_encoder_layer, m_decoder_layer, embedding_dim, lstm_dim, alignment_dim, voc_size = \
+            self.O['m_encoder_layer'], self.O['m_decoder_layer'], self.O['dim_word'], self.O['dim'], \
+            self.O['alignment_dim'], self.O['n_words']
 
         assert lstm_dim % 2 == 0
-        assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
-        assert n_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
+        assert m_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
+        assert m_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
 
         # Embedding
         np_params['Wemb'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
         np_params['Wemb_dec'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
 
         # Encoder (forward)
-        _param_init_lstm_part(np_params, n_encoder_layer, lstm_dim, 'encoder', self.O)
+        _param_init_lstm_part(np_params, m_encoder_layer, lstm_dim, 'encoder', self.O)
         np_params[p_('encoder', 'Wf', 0)] = normal_weight(embedding_dim, 4 * lstm_dim, scale=init_affine_weight)
-        for layer_id in xrange(1, n_encoder_layer):
+        for layer_id in xrange(1, m_encoder_layer):
             np_params[p_('encoder', 'Wf', layer_id)] = normal_weight(
                 (1 + 4 / (1 + self.O['use_half'])) * lstm_dim, 4 * lstm_dim, scale=init_affine_weight)
 
         # Encoder (Reverse)
-        _param_init_lstm_part(np_params, n_encoder_layer, lstm_dim, 'encoder_r', self.O)
+        _param_init_lstm_part(np_params, m_encoder_layer, lstm_dim, 'encoder_r', self.O)
         np_params[p_('encoder_r', 'Wf', 0)] = normal_weight(embedding_dim, 4 * lstm_dim, scale=init_affine_weight)
-        for layer_id in xrange(1, n_encoder_layer):
+        for layer_id in xrange(1, m_encoder_layer):
             np_params[p_('encoder_r', 'Wf', layer_id)] = normal_weight(
                 (1 + 4 / (1 + self.O['use_half'])) * lstm_dim, 4 * lstm_dim, scale=0.01)
 
         # Decoder
-        _param_init_lstm_part(np_params, n_decoder_layer, lstm_dim, 'decoder', self.O)
+        _param_init_lstm_part(np_params, m_decoder_layer, lstm_dim, 'decoder', self.O)
         np_params[p_('decoder', 'Wf', 0)] = normal_weight(embedding_dim + lstm_dim * 10 / 4, 4 * lstm_dim,
                                                           scale=init_affine_weight)
-        for layer_id in xrange(1, n_decoder_layer):
+        for layer_id in xrange(1, m_decoder_layer):
             np_params[p_('decoder', 'Wf', layer_id)] = normal_weight(
                 (1 + 4 / (1 + self.O['use_half'])) * lstm_dim, 4 * lstm_dim, scale=init_affine_weight)
 
@@ -222,7 +222,7 @@ class LstmWithFastFwModel(Model):
         return x, x_mask, y, y_mask, cost
 
     def _encoder(self, src_word_embedding, prefix='encoder', mask=None, dropout_param=None):
-        m_layer = self.O['n_encoder_layer']
+        m_layer = self.O['m_encoder_layer']
         use_zigzag = self.O['use_zigzag']
         assert m_layer >= 1, '#layer should greater than 1'
         if self.O['use_theta']:
@@ -304,7 +304,7 @@ class LstmWithFastFwModel(Model):
             assert previous_h.ndim == 3, 'previous_h.ndim == 3'
             assert previous_s.ndim == 3, 'previous_s.ndim == 3'
 
-        m_layer = self.O['n_decoder_layer']
+        m_layer = self.O['m_decoder_layer']
         if self.O['use_theta']:
             _lstm_step_f = _lstm_step_slice_withTheta
         else:

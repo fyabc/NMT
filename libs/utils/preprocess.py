@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import os
+import time
 
 from .args import parse_args
 from .path import silent_mkdir, find_newest_model, split_model_name
@@ -66,10 +67,22 @@ def _replace_path(this_model_path, this_log_path):
     [NOTE]: This will modify the config.
     """
 
+    worker_id = C[Gen_('worker_id')]
+
+    base, ext = os.path.splitext(C[K_Logging])
+
+    C[K_Logging] = '{}_{}{}{}_{}_{}{}'.format(
+        base,
+        C['network_style'], C[K_n_enc], C[K_n_dec],
+        worker_id,
+        time.strftime('%m-%d-%H-%M-%S'),
+        ext,
+    )
+
     C[K_Logging] = os.path.join(this_log_path, C[K_Logging])
 
-    worker_id = C[Gen_('worker_id')]
-    # todo: Parse worker id to replace data path and logging path.
+    C['data_src'] += '_{}'.format(worker_id)
+    C['data_tgt'] += '_{}'.format(worker_id)
 
     if C[K_StartIteration] is None:
         # Load newest model

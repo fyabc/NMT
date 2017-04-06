@@ -24,10 +24,12 @@ ConfigFilePath = _os.path.join(ProjectRootPath, ConfigFileName)
 # Common configuration keys
 K_Name = 'name'
 K_Logging = 'logging_file'
-K_Model = 'model_file'
+K_Model = 'saveto'
 K_JobType = 'type'
 K_ReloadConfig = 'reload_config'
 K_StartIteration = 'start_iteration'
+K_n_enc = 'm_encoder_layer'
+K_n_dec = 'm_decoder_layer'
 
 K_DataPath = [
     'data_src',
@@ -43,3 +45,6 @@ def Gen_(key):
     """Get generated key with generated prefix."""
 
     return '{}{}'.format(GeneratedPrefix, key)
+
+
+TrainSize = 10560154

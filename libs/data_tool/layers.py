@@ -28,6 +28,7 @@ import theano.tensor as T
 
 from .my_math import concatenate, normal_weight, orthogonal_weight_1xb, uniform_weight, orthogonal_weight
 from ..utils.basic import fX, p_
+from ..utils.constants import Gen_
 from ..utils.config import C
 
 __author__ = 'fyabc'
@@ -125,7 +126,7 @@ def LstmFastFwEncoder(input_, params, prefix='encoder', mask=None, dropout_param
     input_: source word embedding
     """
 
-    n_layer = C['n_encoder_layer']
+    n_layer = C['m_encoder_layer']
     use_zigzag = C['use_zigzag']
 
     assert n_layer >= 1, '#layer must >= 1'
@@ -240,7 +241,7 @@ def LstmFastFwDecoder(input_, params, mask, context, context_mask, previous_h,
         assert previous_h.ndim == 3, 'Previous_h must be 3-d'
         assert previous_s.ndim == 3, 'Previous_s must be 3-d'
 
-    n_layer = C['n_decoder_layer']
+    n_layer = C['m_decoder_layer']
     _lstm_step_func = _lstm_step_slice_with_theta if C['use_theta'] else _lstm_step_slice
 
     # First, we deal with the first layer with attention model
@@ -407,7 +408,7 @@ def GruEncoder(input_, params, prefix='encoder', mask=None, dropout_param=None):
     input_: source word embedding.
     """
 
-    n_layer = C['n_encoder_layer']
+    n_layer = C['m_encoder_layer']
     use_zigzag = C['use_zigzag']
     upload_emb = C.get('upload_emb', False)
     use_final_residual = C.get('use_final_residual', False)
@@ -527,7 +528,7 @@ def GruDecoder(input_, params, mask, context, context_mask, previous_h,
         assert previous_h, 'Previous_h state must be provided'
         assert previous_h.ndim == 3, 'In sample_mode, previous_h should by (#layer * #sample * #feature)'
 
-    n_layer = C['n_encoder_layer']
+    n_layer = C['m_encoder_layer']
     upload_emb = C.get('upload_emb', False)
     use_final_residual = C.get('use_final_residual', False)
 
@@ -557,7 +558,7 @@ def GruDecoder(input_, params, mask, context, context_mask, previous_h,
     ]
 
     # [NOTE] Hard code for model structure
-    if C['to_upper_layer'].lower() == 'fastfw':
+    if C[Gen_('to_upper_layer')].lower() == 'fastfw':
         non_sequence_vars.extend([
             params[p_(prefix, 'Wp_compress_e')],
             params[p_(prefix, 'bp_compress_e')],
@@ -691,13 +692,13 @@ def _param_init_lstm_part(params, m_layer, lstm_dim, prefix):
 
 
 def init_LstmWithFastFw():
-    init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, lstm_dim, alignment_dim, voc_size = \
-        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+    init_affine_weight, m_encoder_layer, m_decoder_layer, embedding_dim, lstm_dim, alignment_dim, voc_size = \
+        C['init_affine_weight'], C['m_encoder_layer'], C['m_decoder_layer'], C['dim_word'], C['dim'], C[
             'alignment_dim'], C['n_words']
 
     assert lstm_dim % 2 == 0
-    assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
-    assert n_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
+    assert m_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
+    assert m_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
 
     params = OrderedDict()
 
@@ -706,9 +707,9 @@ def init_LstmWithFastFw():
     params['Wemb_dec'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
 
     # Encoder (forward)
-    _param_init_lstm_part(params, n_encoder_layer, lstm_dim, 'encoder')
+    _param_init_lstm_part(params, m_encoder_layer, lstm_dim, 'encoder')
     params[p_('encoder', 'Wf', 0)] = normal_weight(embedding_dim, 4 * lstm_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_encoder_layer):
+    for layer_id in xrange(1, m_encoder_layer):
         params[p_('encoder', 'Wf', layer_id)] = normal_weight(
             (1 + 4 / (1 + C['use_half'])) * lstm_dim,
             4 * lstm_dim,
@@ -716,9 +717,9 @@ def init_LstmWithFastFw():
         )
 
     # Encoder (reverse)
-    _param_init_lstm_part(params, n_encoder_layer, lstm_dim, 'encoder_r')
+    _param_init_lstm_part(params, m_encoder_layer, lstm_dim, 'encoder_r')
     params[p_('encoder_r', 'Wf', 0)] = normal_weight(embedding_dim, 4 * lstm_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_encoder_layer):
+    for layer_id in xrange(1, m_encoder_layer):
         params[p_('encoder_r', 'Wf', layer_id)] = normal_weight(
             (1 + 4 / (1 + C['use_half'])) * lstm_dim,
             4 * lstm_dim,
@@ -726,9 +727,9 @@ def init_LstmWithFastFw():
         )
 
     # Decoder
-    _param_init_lstm_part(params, n_decoder_layer, lstm_dim, 'decoder')
+    _param_init_lstm_part(params, m_decoder_layer, lstm_dim, 'decoder')
     params[p_('decoder', 'Wf', 0)] = normal_weight(embedding_dim, 4 * lstm_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_encoder_layer):
+    for layer_id in xrange(1, m_encoder_layer):
         params[p_('decoder', 'Wf', layer_id)] = normal_weight(
             (1 + 4 / (1 + C['use_half'])) * lstm_dim,
             4 * lstm_dim,
@@ -774,23 +775,23 @@ def _param_init_gru_part(params, m_layer, gru_dim, prefix):
 
 
 def init_GruWithHighway():
-    init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
-        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+    init_affine_weight, m_encoder_layer, m_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
+        C['init_affine_weight'], C['m_encoder_layer'], C['m_decoder_layer'], C['dim_word'], C['dim'], C[
             'alignment_dim'], C['n_words']
 
     assert gru_dim % 2 == 0
-    assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
-    assert n_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
+    assert m_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
+    assert m_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
 
     # [NOTE] Hard code for model structure
-    use_src4all_layers = C['to_upper_layer'].lower() != 'raw'
+    use_src4all_layers = C[Gen_('to_upper_layer')].lower() != 'raw'
 
-    if C['init_distribution'] == 'normal':
+    if C['init_distr'] == 'normal':
         weight_sampler = normal_weight
-    elif C['init_distribution'] == 'uniform':
+    elif C['init_distr'] == 'uniform':
         weight_sampler = uniform_weight
     else:
-        raise Exception('Only support Normal or Uniform distribution while {} Given'.format(C['init_distribution']))
+        raise Exception('Only support Normal or Uniform distribution while {} Given'.format(C['init_distr']))
 
     params = OrderedDict()
 
@@ -799,20 +800,20 @@ def init_GruWithHighway():
     params['Wemb_dec'] = weight_sampler(voc_size, embedding_dim, scale=init_affine_weight)
 
     # Encoder (forward and reverse)
-    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder')
-    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder_r')
+    _param_init_gru_part(params, m_encoder_layer, gru_dim, 'encoder')
+    _param_init_gru_part(params, m_encoder_layer, gru_dim, 'encoder_r')
     params[p_('encoder', 'Wf', 0)] = weight_sampler(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
     params[p_('encoder_r', 'Wf', 0)] = weight_sampler(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_encoder_layer):
+    for layer_id in xrange(1, m_encoder_layer):
         params[p_('encoder', 'Wf', layer_id)] = weight_sampler(
             embedding_dim * use_src4all_layers + gru_dim, 3 * gru_dim, scale=init_affine_weight)
         params[p_('encoder_r', 'Wf', layer_id)] = weight_sampler(
             embedding_dim * use_src4all_layers + gru_dim, 3 * gru_dim, scale=init_affine_weight)
 
     # Decoder
-    _param_init_gru_part(params, n_decoder_layer, gru_dim, 'decoder')
+    _param_init_gru_part(params, m_decoder_layer, gru_dim, 'decoder')
     params[p_('decoder', 'Wf', 0)] = weight_sampler(2 * gru_dim + embedding_dim, 3 * gru_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_decoder_layer):
+    for layer_id in xrange(1, m_decoder_layer):
         params[p_('decoder', 'Wf', layer_id)] = weight_sampler(
             3 * gru_dim + embedding_dim * use_src4all_layers, 3 * gru_dim, scale=init_affine_weight)
 
@@ -841,13 +842,13 @@ def init_GruWithHighway():
 
 
 def init_GruWithFastFw():
-    init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
-        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+    init_affine_weight, m_encoder_layer, m_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
+        C['init_affine_weight'], C['m_encoder_layer'], C['m_decoder_layer'], C['dim_word'], C['dim'], C[
             'alignment_dim'], C['n_words']
 
     assert gru_dim % 2 == 0
-    assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
-    assert n_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
+    assert m_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
+    assert m_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
 
     params = OrderedDict()
 
@@ -856,11 +857,11 @@ def init_GruWithFastFw():
     params['Wemb_dec'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
 
     # Encoder (forward and reverse)
-    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder')
-    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder_r')
+    _param_init_gru_part(params, m_encoder_layer, gru_dim, 'encoder')
+    _param_init_gru_part(params, m_encoder_layer, gru_dim, 'encoder_r')
     params[p_('encoder', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
     params[p_('encoder_r', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_encoder_layer):
+    for layer_id in xrange(1, m_encoder_layer):
         params[p_('encoder', 'Wf', layer_id)] = normal_weight(
             3 * gru_dim // (1 + C['use_half']) + gru_dim, 3 * gru_dim, scale=init_affine_weight)
         params[p_('encoder_r', 'Wf', layer_id)] = normal_weight(
@@ -871,9 +872,9 @@ def init_GruWithFastFw():
     params[p_('decoder', 'bp_compress_e')] = np.zeros((2 * gru_dim,), dtype='float32')
 
     # Decoder
-    _param_init_gru_part(params, n_decoder_layer, gru_dim, 'decoder')
+    _param_init_gru_part(params, m_decoder_layer, gru_dim, 'decoder')
     params[p_('decoder', 'Wf', 0)] = normal_weight(2 * gru_dim + embedding_dim, 3 * gru_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_decoder_layer):
+    for layer_id in xrange(1, m_decoder_layer):
         params[p_('decoder', 'Wf', layer_id)] = normal_weight(
             3 * gru_dim // (1 + C['use_half']) + gru_dim, 3 * gru_dim, scale=0.01)
 
@@ -902,13 +903,13 @@ def init_GruWithFastFw():
 
 
 def init_GruWithImap():
-    init_affine_weight, n_encoder_layer, n_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
-        C['init_affine_weight'], C['n_encoder_layer'], C['n_decoder_layer'], C['dim_word'], C['dim'], C[
+    init_affine_weight, m_encoder_layer, m_decoder_layer, embedding_dim, gru_dim, alignment_dim, voc_size = \
+        C['init_affine_weight'], C['m_encoder_layer'], C['m_decoder_layer'], C['dim_word'], C['dim'], C[
             'alignment_dim'], C['n_words']
 
     assert gru_dim % 2 == 0
-    assert n_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
-    assert n_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
+    assert m_encoder_layer >= 1, '#LstmEncoderLayer must >= 1'
+    assert m_decoder_layer >= 1, '#LstmDecoderLayer must >= 1'
 
     params = OrderedDict()
 
@@ -917,8 +918,8 @@ def init_GruWithImap():
     params['Wemb_dec'] = normal_weight(voc_size, embedding_dim, scale=init_affine_weight)
 
     # Encoder (forward and reverse)
-    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder')
-    _param_init_gru_part(params, n_encoder_layer, gru_dim, 'encoder_r')
+    _param_init_gru_part(params, m_encoder_layer, gru_dim, 'encoder')
+    _param_init_gru_part(params, m_encoder_layer, gru_dim, 'encoder_r')
     params[p_('encoder', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
     params[p_('encoder_r', 'Wf', 0)] = normal_weight(embedding_dim, 3 * gru_dim, scale=init_affine_weight)
 
@@ -930,14 +931,14 @@ def init_GruWithImap():
         params[p_('decoder', 'emb2first_W')] = normal_weight(embedding_dim, gru_dim, scale=init_affine_weight)
         params[p_('decoder', 'emb2first_b')] = np.zeros((gru_dim,), dtype=fX)
 
-    for layer_id in xrange(1, n_encoder_layer):
+    for layer_id in xrange(1, m_encoder_layer):
         params[p_('encoder', 'Wf', layer_id)] = normal_weight(gru_dim, 3 * gru_dim, scale=init_affine_weight)
         params[p_('encoder_r', 'Wf', layer_id)] = normal_weight(gru_dim, 3 * gru_dim, scale=init_affine_weight)
 
     # Decoder
-    _param_init_gru_part(params, n_decoder_layer, gru_dim, 'decoder')
+    _param_init_gru_part(params, m_decoder_layer, gru_dim, 'decoder')
     params[p_('decoder', 'Wf', 0)] = normal_weight(2 * gru_dim + embedding_dim, 3 * gru_dim, scale=init_affine_weight)
-    for layer_id in xrange(1, n_decoder_layer):
+    for layer_id in xrange(1, m_decoder_layer):
         params[p_('decoder', 'Wf', layer_id)] = normal_weight(gru_dim, 3 * gru_dim, scale=0.01)
 
     # For the initial state of decoder

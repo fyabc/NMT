@@ -45,9 +45,8 @@ def split_model_name(model_name):
     tmp, ext = os.path.splitext(model_name)
     name, iteration = os.path.splitext(tmp)
 
-    # Remove extra dot
     if iteration:
-        iteration = iteration[1:]
+        iteration = iteration[5:]
 
     return name, iteration, ext
 
@@ -55,13 +54,13 @@ def split_model_name(model_name):
 def find_newest_model(dir_name, raw_name, ext='.npz', ret_filename=False):
     """Find the newest model of current name.
 
-    Model name format: xxx.4.npz
+    Model name format: xxx.iter10000.npz
     """
 
     max_number = -1
     newest_filename = ''
 
-    pattern = '{}.*{}'.format(os.path.basename(raw_name), ext)
+    pattern = '{}.iter*{}'.format(os.path.basename(raw_name), ext)
 
     for filename in os.listdir(dir_name):
         if fnmatch.fnmatch(filename, pattern):
@@ -85,4 +84,4 @@ def find_newest_model(dir_name, raw_name, ext='.npz', ret_filename=False):
 
 def model_iteration_name(model_name, iteration):
     root, ext = os.path.splitext(model_name)
-    return '{}.{}{}'.format(root, iteration, ext)
+    return '{}.iter{}{}'.format(root, iteration, ext)
