@@ -362,6 +362,7 @@ class LstmWithFastFwModel(Model):
                                                      strict=True)
 
         if dropout_param:
+            # FIXME: change to _hidden_state_after_dropout here
             _hidden_state_lastLayer[0] = self.dropout(_hidden_state_lastLayer[0], dropout_param[0], dropout_param[1],
                                                       dropout_param[2])
 
@@ -370,6 +371,7 @@ class LstmWithFastFwModel(Model):
         ctx_from_1stlayer = _hidden_state_lastLayer[3]
 
         if one_step:
+            # FIXME: use _hidden_state_lastLayer (without dropout) here
             stack_h = _hidden_state_lastLayer[0].dimshuffle('x', 0, 1)
             stack_s = _hidden_state_lastLayer[1].dimshuffle('x', 0, 1)
             for layer_id in xrange(1, m_layer):
